@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrimeVision AI — Intelligent Multimodal Forensic Analysis Platform</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <!-- Three.js & OrbitControls for 3D Scene -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- Custom Forensic Style -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/scene3d.js"></script>
+
+</head>
+<body>
+
+    <!-- Top Header -->
+    <header class="cv-header">
+        <div class="d-flex align-items-center gap-3">
+            <h1 class="cv-title">CrimeVision AI <span>– Intelligent Multimodal Forensic Analysis Platform</span></h1>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <!-- Active Case Selector -->
+            <div class="d-flex align-items-center gap-2 bg-dark px-3 py-1 rounded border border-secondary border-opacity-25">
+                <i class="fa-solid fa-folder-open text-info small"></i>
+                <select id="active-case-select" class="bg-transparent border-0 text-white small fw-bold" style="outline: none; cursor: pointer;">
+                    <option value="" disabled selected>Loading cases...</option>
+                </select>
+            </div>
+            <span class="cv-mode-indicator" id="header-mode-indicator">Mode: Image Analysis</span>
+            <button class="btn btn-sm btn-outline-info" id="btn-load-sample-quick" title="Load Reference Forensic Evidence">
+                <i class="fa-solid fa-flask"></i> Load Sample Evidence
+            </button>
+            <button class="btn btn-sm btn-primary" id="btn-header-pdf-download" onclick="app.downloadPdfReport()">
+                <i class="fa-solid fa-file-pdf"></i> Download PDF Report
+            </button>
+        </div>
+    </header>
+
+    <!-- Top Navigation Sub-Bar (Allows switching between Reference Hub and Full Platform Features) -->
+    <nav class="cv-subnav d-flex justify-content-between align-items-center px-4 py-2" style="background-color: #060b16; border-bottom: 1px solid #1a2742;">
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-nav-tab active" data-tab="hub" onclick="app.switchMainTab('hub')">
+                <i class="fa-solid fa-microchip me-1 text-info"></i> Multimodal Analysis Hub
+            </button>
+            <button class="btn btn-sm btn-nav-tab" data-tab="dashboard" onclick="app.switchMainTab('dashboard')">
+                <i class="fa-solid fa-chart-pie me-1 text-warning"></i> Dashboard
+            </button>
+            <button class="btn btn-sm btn-nav-tab" data-tab="cases" onclick="app.switchMainTab('cases')">
+                <i class="fa-solid fa-folder-closed me-1 text-primary"></i> Case Files
+            </button>
+            <button class="btn btn-sm btn-nav-tab" data-tab="evidence" onclick="app.switchMainTab('evidence')">
+                <i class="fa-solid fa-box-archive me-1 text-success"></i> Evidence Ingestion
+            </button>
+            <button class="btn btn-sm btn-nav-tab" data-tab="timeline" onclick="app.switchMainTab('timeline')">
+                <i class="fa-solid fa-timeline me-1 text-purple"></i> Unified Timeline
+            </button>
+            <button class="btn btn-sm btn-nav-tab" data-tab="scene3d" onclick="app.switchMainTab('scene3d')">
+                <i class="fa-solid fa-cube me-1 text-info"></i> 3D Scene View
+            </button>
+            <button class="btn btn-sm btn-nav-tab" data-tab="reports" onclick="app.switchMainTab('reports')">
+                <i class="fa-solid fa-book me-1 text-danger"></i> Forensic Reports
+            </button>
+            <button class="btn btn-sm btn-nav-tab" data-tab="settings" onclick="app.switchMainTab('settings')">
+                <i class="fa-solid fa-gear me-1 text-secondary"></i> Diagnostics
+            </button>
+        </div>
+        <div>
+            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal-new-case">
+                <i class="fa-solid fa-plus"></i> New Case
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container-fluid py-4 px-4">
+
+        <!-- ========================================================================= -->
+        <!-- 1. MULTIMODAL ANALYSIS HUB (EXACT LAYOUT FROM USER REFERENCE SCREENSHOTS) -->
+        <!-- ========================================================================= -->
+        <div id="tab-view-hub" class="main-tab-content active">
+            <div class="row g-4">
+
+                <!-- ==================== LEFT COLUMN (Navigation & Upload) ==================== -->
+                <div class="col-lg-3 col-md-4">
+                    <!-- Mode Selector Card -->
+                    <div class="cv-card mb-3">
+                        <div class="cv-mode-list">
+                            <div class="cv-mode-btn active" id="mode-btn-image" onclick="app.setMode('image')">
+                                <i class="fa-regular fa-image text-info"></i>
+                                <span>Image Analysis</span>
+                            </div>
+                            <div class="cv-mode-btn" id="mode-btn-audio" onclick="app.setMode('audio')">
+                                <i class="fa-solid fa-microphone text-primary"></i>
+                                <span>Audio Analysis</span>
+                            </div>
+                            <div class="cv-mode-btn" id="mode-btn-video" onclick="app.setMode('video')">
+                                <i class="fa-solid fa-video text-purple"></i>
+                                <span>Video Analysis</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mode-Sensitive Upload Card -->
+                    <div class="cv-card">
+                        <div class="cv-section-title">
+                            <i class="fa-regular fa-folder-open text-warning me-1"></i>
+                            <span id="upload-card-title">Upload Image</span>
+                        </div>
+
+                        <!-- Hidden file inputs -->
+                        <input type="file" id="file-input-image" class="d-none" accept=".jpg,.jpeg,.png,.webp">
+                        <input type="file" id="file-input-audio" class="d-none" accept=".mp3,.wav,.m4a">
+                        <input type="file" id="file-input-video" class="d-none" accept=".mp4,.avi,.mov">
+
+                        <!-- Dropzone -->
+                        <div class="cv-upload-box" id="cv-upload-box" onclick="app.triggerFileInput()">
+                            <div id="upload-box-icon" class="mb-2">
+                                <i class="fa-regular fa-image fa-2x text-info"></i>
+                            </div>
+                            <div class="fw-bold small text-white" id="upload-box-primary-text">Upload Image</div>
+                            <div class="text-secondary" style="font-size: 0.72rem;" id="upload-box-subtext">Photos for recovery</div>
+                        </div>
+
+                        <!-- Selected File Pill -->
+                        <div class="cv-file-pill" id="cv-file-pill">
+                            <span id="cv-file-name" class="text-truncate" style="max-width: 170px;">crime-scene-investigation.jpg</span>
+                            <span id="cv-file-size">168.9 KB</span>
+                        </div>
+
+                        <!-- Start Processing Button -->
+                        <button class="cv-btn-process" id="btn-start-processing" onclick="app.startProcessing()">
+                            <i class="fa-solid fa-rocket"></i> Start Processing
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ==================== CENTER COLUMN ==================== -->
+                <div class="col-lg-5 col-md-8">
+
+                    <!-- 1. IMAGE MODE CENTER: 3D Scene Reconstruction & Annotated Image View -->
+                    <div id="center-panel-image">
+                        <div class="cv-card">
+                            <div class="cv-card-header">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="text-danger">🎯</span>
+                                    <span>3D Scene Reconstruction</span>
+                                </div>
+                                <button class="btn btn-sm btn-outline-secondary text-info p-1 px-2 border-0" id="btn-toggle-3d-view" title="Toggle 3D Scene View" onclick="app.toggle3DView()">
+                                    <i class="fa-solid fa-arrows-rotate"></i>
+                                </button>
+                            </div>
+
+                            <!-- Canvas area -->
+                            <div class="cv-image-canvas" id="image-canvas-container">
+                                <!-- Image Display with Bounding Boxes -->
+                                <img id="analyzed-image-display" src="/storage/demo/crime-scene-investigation.jpg" alt="Analyzed Evidence" style="display: block;">
+                                <!-- 3D Three.js Viewport (toggled) -->
+                                <div id="scene3d-container" style="width: 100%; height: 480px; display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. AUDIO MODE CENTER: Live Transcript & AI Intelligence Report -->
+                    <div id="center-panel-audio" style="display: none;">
+                        <!-- Live Transcript Card -->
+                        <div class="cv-card mb-3">
+                            <div class="cv-section-title">
+                                <i class="fa-regular fa-file-lines text-danger me-1"></i> Live Transcript
+                            </div>
+                            <div class="p-3 rounded small" style="background-color: #0b1220; min-height: 90px; color: #cbd5e1; line-height: 1.5;" id="audio-live-transcript-box">
+                                <strong>Transcript:</strong><br>
+                                I was walking down Maple Avenue around 8 p.m. when I noticed the lights still on inside the jewelry store on the corner. Suddenly, I saw two masked individuals rush out of the store carrying bags. One of them dropped a necklace on the sidewalk. They jumped into a dark car park nearby and sped off before anyone could react. I remember hearing the store alarm blaring right after they drove away.
+                            </div>
+                        </div>
+
+                        <!-- AI Intelligence Report Card -->
+                        <div class="cv-card">
+                            <div class="cv-section-title">
+                                <i class="fa-solid fa-magnifying-glass text-info me-1"></i> AI Intelligence Report
+                            </div>
+
+                            <!-- Summary Block -->
+                            <div class="p-3 rounded mb-3" style="background-color: #172a48; border-left: 3px solid #38bdf8;">
+                                <div class="fw-bold text-info small mb-1" style="font-size: 0.72rem; letter-spacing: 0.5px;">AI SUMMARY</div>
+                                <p class="small text-white mb-0" id="audio-ai-summary-text" style="line-height: 1.45;">
+                                    "The witness reported observing two masked individuals exiting the jewelry store on Maple Avenue around 8 p.m., fleeing the scene in a dark car after dropping a necklace, and speeding away as the store's alarm sounded."
+                                </p>
+                            </div>
+
+                            <!-- Badges -->
+                            <div class="d-flex gap-2 mb-4">
+                                <span class="cv-badge-pink" id="audio-event-type-badge">Event Type: ROBBERY</span>
+                                <span class="cv-badge-green" id="audio-location-badge">Location: STORE</span>
+                            </div>
+
+                            <!-- Transcripts & Translations Tabs -->
+                            <div class="cv-section-title">
+                                <i class="fa-solid fa-scroll text-warning me-1"></i> Transcripts & Translations:
+                            </div>
+                            <div class="cv-tabs-bar">
+                                <div class="cv-tab-item active" data-lang-tab="en" onclick="app.setAudioTab('en')">English</div>
+                                <div class="cv-tab-item" data-lang-tab="hi" onclick="app.setAudioTab('hi')">Hindi</div>
+                                <div class="cv-tab-item" data-lang-tab="te" onclick="app.setAudioTab('te')">Telugu</div>
+                                <div class="cv-tab-item" data-lang-tab="fr" onclick="app.setAudioTab('fr')">French</div>
+                            </div>
+                            <div class="cv-translation-box" id="audio-translation-content">
+                                I was walking down Maple Avenue around 8 p.m. when I noticed the lights still on inside the jewelry store on the corner. Suddenly, I saw two masked individuals rush out of the store carrying bags. One of them dropped a necklace on the sidewalk. They jumped into a dark car park nearby and sped off before anyone could react. I remember hearing the store alarm blaring right after they drove away.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. VIDEO MODE CENTER: Video Player & Frame Gallery -->
+                    <div id="center-panel-video" style="display: none;">
+                        <div class="cv-card mb-3">
+                            <div class="cv-card-header">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="text-purple">🎥</span>
+                                    <span>CCTV Surveillance Keyframe Stream</span>
+                                </div>
+                            </div>
+                            <div class="cv-image-canvas">
+                                <video id="video-player" controls class="w-100" style="max-height: 480px;" src="/storage/demo/demo_sector4_surveillance.mp4"></video>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ==================== RIGHT COLUMN (Analysis & Chat) ==================== -->
+                <div class="col-lg-4 col-md-12">
+
+                    <!-- Prominent Download PDF Report Button -->
+                    <button class="cv-btn-download-pdf" id="btn-download-pdf-top" onclick="app.downloadPdfReport()">
+                        <i class="fa-solid fa-file-pdf"></i> Download PDF Report
+                    </button>
+
+                    <!-- 1. IMAGE MODE RIGHT PANEL: Evidence Analysis & Scenarios & Chat -->
+                    <div id="right-panel-image">
+                        <div class="cv-card mb-3">
+                            <div class="cv-section-title mb-3">
+                                <i class="fa-regular fa-clipboard text-danger me-1"></i> Evidence Analysis
+                            </div>
+
+                            <!-- AI Scene Summary -->
+                            <div class="mb-3">
+                                <div class="text-warning fw-bold small mb-1" style="font-size: 0.72rem; letter-spacing: 0.5px;">✨ AI SCENE SUMMARY</div>
+                                <div class="small text-white" id="image-summary-type"><strong>Summary Type:</strong> Crime Scene</div>
+                                <div class="small text-secondary" id="image-brief-desc" style="line-height: 1.4;">
+                                    <strong>Brief Description:</strong> A male individual is observed lying on the floor, surrounded by a knife and restrained with tape.
+                                </div>
+                            </div>
+
+                            <!-- Visual Summary -->
+                            <div class="mb-3">
+                                <div class="text-danger fw-bold small mb-1" style="font-size: 0.72rem; letter-spacing: 0.5px;">👁️ VISUAL SUMMARY</div>
+                                <p class="small text-white mb-0" id="image-visual-summary">
+                                    A man laying on the floor with a knife and tape around him
+                                </p>
+                            </div>
+
+                            <!-- 4 Metric Grid Tiles -->
+                            <div class="cv-metrics-grid">
+                                <div class="cv-metric-tile">
+                                    <div class="cv-metric-icon">📦</div>
+                                    <div class="cv-metric-title">Objects</div>
+                                    <div class="cv-metric-val" id="metric-objects">9</div>
+                                </div>
+                                <div class="cv-metric-tile">
+                                    <div class="cv-metric-icon">👤</div>
+                                    <div class="cv-metric-title">Persons</div>
+                                    <div class="cv-metric-val" id="metric-persons">1</div>
+                                </div>
+                                <div class="cv-metric-tile">
+                                    <div class="cv-metric-icon">🔫</div>
+                                    <div class="cv-metric-title">Weapons</div>
+                                    <div class="cv-metric-val" id="metric-weapons">1</div>
+                                </div>
+                                <div class="cv-metric-tile">
+                                    <div class="cv-metric-icon">📍</div>
+                                    <div class="cv-metric-title">Location</div>
+                                    <div class="cv-metric-val" id="metric-location" style="font-size: 0.95rem;">office</div>
+                                </div>
+                            </div>
+
+                            <!-- Actions Detected -->
+                            <div class="mb-3">
+                                <div class="text-warning fw-bold small mb-1" style="font-size: 0.72rem; letter-spacing: 0.5px;">⚡ ACTIONS DETECTED</div>
+                                <div class="small text-white fw-semibold" id="image-actions-detected">lying down</div>
+                            </div>
+
+                            <!-- Evidence Facts -->
+                            <div class="mb-3">
+                                <div class="text-info fw-bold small mb-1" style="font-size: 0.72rem; letter-spacing: 0.5px;">🕵️ EVIDENCE FACTS</div>
+                                <div class="small text-secondary" id="image-evidence-facts">
+                                    laptop, diningtable, chair, Human, sofa, cup
+                                </div>
+                            </div>
+
+                            <!-- AI Application Scenarios -->
+                            <div class="mb-2">
+                                <div class="text-purple fw-bold small mb-2" style="font-size: 0.72rem; letter-spacing: 0.5px;">🧠 AI APPLICATION SCENARIOS</div>
+                                <div id="image-scenarios-container">
+                                    <div class="cv-scenario-card">
+                                        <div class="cv-scenario-title">Scenario 1:</div>
+                                        The man was attacked by an unknown assailant while working late in the office, and the perpetrator used the knife to inflict fatal wounds before fleeing the scene.
+                                    </div>
+                                    <div class="cv-scenario-card">
+                                        <div class="cv-scenario-title">Scenario 2:</div>
+                                        The individual, feeling overwhelmed by stress, attempted to harm himself with the knife but was unable to complete the act and lies there, awaiting help, with the tape possibly being used in a misguided attempt to treat the wound.
+                                    </div>
+                                    <div class="cv-scenario-card">
+                                        <div class="cv-scenario-title">Scenario 3:</div>
+                                        The person staged a crime scene to mislead investigators.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ask AI about this Image -->
+                        <div class="cv-card p-0 overflow-hidden">
+                            <div class="p-3 border-bottom border-secondary border-opacity-25 d-flex align-items-center gap-2">
+                                <span>🤖</span>
+                                <span class="fw-bold text-info small">Ask AI about this Image</span>
+                            </div>
+                            <div class="cv-chat-box">
+                                <div class="cv-chat-stream" id="chat-stream-image">
+                                    <div class="cv-chat-msg assistant">
+                                        The scene summary is: "A male individual is observed lying on the floor, surrounded by a knife and restrained with tape." The location is an office. One person is detected, and bloodstains are present.
+                                    </div>
+                                    <div class="cv-chat-msg user">
+                                        what are the objects seen in the image.
+                                    </div>
+                                    <div class="cv-chat-msg assistant">
+                                        The detected objects include: laptop, diningtable, chair, Human, sofa, and cup, with physical evidence tags placed near the individual.
+                                    </div>
+                                </div>
+                                <form class="cv-chat-input-bar" id="chat-form-image" onsubmit="app.handleChatSubmit(event, 'image')">
+                                    <input type="text" class="cv-chat-input" id="chat-input-image" placeholder="Ask a question..." autocomplete="off">
+                                    <button type="submit" class="cv-chat-btn-send">
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. AUDIO MODE RIGHT PANEL: AI Generated Crime Event Timeline & Audio Chat -->
+                    <div id="right-panel-audio" style="display: none;">
+                        <!-- Timeline Card -->
+                        <div class="cv-card mb-3">
+                            <div class="cv-section-title mb-1">
+                                <i class="fa-solid fa-shield-halved text-purple me-1"></i> AI Generated Crime Event Timeline
+                            </div>
+                            <div class="text-secondary small mb-3" style="font-size: 0.72rem;">(from witness audio statement)</div>
+
+                            <div class="table-responsive">
+                                <table class="cv-timeline-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 25%;">Time</th>
+                                            <th>Event</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="audio-timeline-tbody">
+                                        <tr>
+                                            <td class="cv-time-col">00:00</td>
+                                            <td>witness noticed lights on inside jewelry store</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="cv-time-col">00:07</td>
+                                            <td>two masked individuals rushed out of store</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="cv-time-col">00:12</td>
+                                            <td>suspect dropped necklace on sidewalk</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="cv-time-col">00:15</td>
+                                            <td>suspects sped off in car</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="cv-time-col">00:21</td>
+                                            <td>store alarm blaring</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Ask AI about this Audio -->
+                        <div class="cv-card p-0 overflow-hidden">
+                            <div class="p-3 border-bottom border-secondary border-opacity-25 d-flex align-items-center gap-2">
+                                <span>🤖</span>
+                                <span class="fw-bold text-info small">Ask AI about this Audio</span>
+                            </div>
+                            <div class="cv-chat-box">
+                                <div class="cv-chat-stream" id="chat-stream-audio">
+                                    <div class="cv-chat-msg assistant">
+                                        I've analyzed the audio transcript and timeline. Ask me anything about the events detected!
+                                    </div>
+                                    <div class="cv-chat-msg user">
+                                        give summary of the audio
+                                    </div>
+                                    <div class="cv-chat-msg assistant">
+                                        The witness reported observing two masked individuals exiting the jewelry store on Maple Avenue around 8 p.m., fleeing the scene in a dark car after dropping a necklace, and speeding away as the store's alarm sounded.
+                                    </div>
+                                </div>
+                                <form class="cv-chat-input-bar" id="chat-form-audio" onsubmit="app.handleChatSubmit(event, 'audio')">
+                                    <input type="text" class="cv-chat-input" id="chat-input-audio" placeholder="Ask a question..." autocomplete="off">
+                                    <button type="submit" class="cv-chat-btn-send">
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. VIDEO MODE RIGHT PANEL: Video Events & Video Chat -->
+                    <div id="right-panel-video" style="display: none;">
+                        <div class="cv-card mb-3">
+                            <div class="cv-section-title mb-1">
+                                <i class="fa-solid fa-bell text-warning me-1"></i> Timestamped Video Events
+                            </div>
+                            <div class="table-responsive">
+                                <table class="cv-timeline-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 25%;">Time</th>
+                                            <th>Event</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="video-timeline-tbody">
+                                        <tr>
+                                            <td class="cv-time-col">00:04</td>
+                                            <td>Individual observed entering loading perimeter</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="cv-time-col">00:09</td>
+                                            <td>Transport vehicle positioned at loading bay</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="cv-time-col">00:17</td>
+                                            <td>Multiple individuals meeting at vehicle ramp</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Ask AI about this Video -->
+                        <div class="cv-card p-0 overflow-hidden">
+                            <div class="p-3 border-bottom border-secondary border-opacity-25 d-flex align-items-center gap-2">
+                                <span>🤖</span>
+                                <span class="fw-bold text-info small">Ask AI about this Video</span>
+                            </div>
+                            <div class="cv-chat-box">
+                                <div class="cv-chat-stream" id="chat-stream-video">
+                                    <div class="cv-chat-msg assistant">
+                                        I've indexed the CCTV video footage and extracted keyframe timestamps. You can inquire about vehicle movement or individuals in the camera view.
+                                    </div>
+                                </div>
+                                <form class="cv-chat-input-bar" id="chat-form-video" onsubmit="app.handleChatSubmit(event, 'video')">
+                                    <input type="text" class="cv-chat-input" id="chat-input-video" placeholder="Ask a question..." autocomplete="off">
+                                    <button type="submit" class="cv-chat-btn-send">
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- 2. FULL DASHBOARD VIEW (PRESERVED ALL YOUR ADVANCED FEATURES)             -->
+        <!-- ========================================================================= -->
+        <div id="tab-view-dashboard" class="main-tab-content" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="h4 mb-1 text-white">Forensic Intelligence Overview</h2>
+                    <p class="text-secondary small mb-0">Multimodal evidence aggregation, chronological tracking, and AI-assisted decision support.</p>
+                </div>
+            </div>
+
+            <!-- Metric Cards Row -->
+            <div class="row g-3 mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="cv-metric-tile text-start p-3">
+                        <div class="text-info small fw-bold text-uppercase mb-1">Total Cases</div>
+                        <div class="h3 mb-0 text-white" id="stat-total-cases">1</div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="cv-metric-tile text-start p-3">
+                        <div class="text-warning small fw-bold text-uppercase mb-1">Total Evidence Files</div>
+                        <div class="h3 mb-0 text-white" id="stat-total-evidence">3</div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="cv-metric-tile text-start p-3">
+                        <div class="text-success small fw-bold text-uppercase mb-1">Detected Entities</div>
+                        <div class="h3 mb-0 text-white" id="stat-total-detections">14</div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="cv-metric-tile text-start p-3">
+                        <div class="text-purple small fw-bold text-uppercase mb-1">Timeline Events</div>
+                        <div class="h3 mb-0 text-white" id="stat-total-events">6</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-5">
+                    <div class="cv-card h-100">
+                        <div class="cv-section-title"><i class="fa-solid fa-chart-pie text-info me-2"></i> Evidence Modality Breakdown</div>
+                        <div style="height: 250px;">
+                            <canvas id="chart-modalities"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="cv-card h-100">
+                        <div class="cv-section-title"><i class="fa-solid fa-chart-simple text-warning me-2"></i> Case Status Distribution</div>
+                        <div style="height: 250px;">
+                            <canvas id="chart-case-status"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- 3. CASE FILES VIEW                                                       -->
+        <!-- ========================================================================= -->
+        <div id="tab-view-cases" class="main-tab-content" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="h4 mb-0 text-white">Investigation Cases</h2>
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modal-new-case">
+                    <i class="fa-solid fa-plus me-1"></i> Register New Case
+                </button>
+            </div>
+            <div class="cv-card">
+                <div class="table-responsive">
+                    <table class="cv-timeline-table">
+                        <thead>
+                            <tr>
+                                <th>Case Number</th>
+                                <th>Case Title</th>
+                                <th>Lead Investigator</th>
+                                <th>Status</th>
+                                <th>Evidence Count</th>
+                                <th>Events</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cases-table-tbody">
+                            <tr><td colspan="8" class="text-center text-muted py-4">Loading cases...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- 4. EVIDENCE INGESTION VIEW (SHA-256 Chain of Custody)                     -->
+        <!-- ========================================================================= -->
+        <div id="tab-view-evidence" class="main-tab-content" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="h4 mb-1 text-white">Evidence Ingestion & Cryptographic Chain of Custody</h2>
+                    <p class="text-secondary small mb-0">Original evidence files remain immutable. Cryptographic SHA-256 hashes generated on upload.</p>
+                </div>
+            </div>
+            <div class="cv-card">
+                <div class="table-responsive">
+                    <table class="cv-timeline-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Filename</th>
+                                <th>Media Type</th>
+                                <th>Size</th>
+                                <th>SHA-256 Hash</th>
+                                <th>Status</th>
+                                <th>Uploaded</th>
+                            </tr>
+                        </thead>
+                        <tbody id="evidence-table-tbody">
+                            <tr><td colspan="7" class="text-center text-muted py-4">Loading evidence items...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- 5. UNIFIED TIMELINE VIEW (Cross-Modal Evidence Fusion Engine)            -->
+        <!-- ========================================================================= -->
+        <div id="tab-view-timeline" class="main-tab-content" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="h4 mb-1 text-white">Unified Chronological Forensic Timeline</h2>
+                    <p class="text-secondary small mb-0">Cross-modal synthesis of video events, speech transcripts, and visual observations.</p>
+                </div>
+            </div>
+            <div class="cv-card">
+                <div class="table-responsive">
+                    <table class="cv-timeline-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Modality</th>
+                                <th>Event Type</th>
+                                <th>Description</th>
+                                <th>Confidence</th>
+                            </tr>
+                        </thead>
+                        <tbody id="unified-timeline-tbody">
+                            <tr><td colspan="5" class="text-center text-muted py-4">Loading unified timeline...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- 6. 3D SCENE VIEW (Full Three.js Space)                                   -->
+        <!-- ========================================================================= -->
+        <div id="tab-view-scene3d" class="main-tab-content" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="h4 mb-0 text-white">Conceptual 3D Forensic Scene Visualization</h2>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-info" onclick="app.scene3d && app.scene3d.resetCamera()"><i class="fa-solid fa-camera-rotate"></i> Reset Camera</button>
+                    <button class="btn btn-sm btn-outline-info" onclick="app.scene3d && app.scene3d.toggleGrid()"><i class="fa-solid fa-border-all"></i> Toggle Grid</button>
+                </div>
+            </div>
+            <div class="cv-card p-0 overflow-hidden">
+                <div id="full-scene3d-container" style="width: 100%; height: 580px; position: relative;"></div>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- 7. FORENSIC REPORTS VIEW                                                 -->
+        <!-- ========================================================================= -->
+        <div id="tab-view-reports" class="main-tab-content" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="h4 mb-0 text-white">Forensic PDF Reports History</h2>
+                <button class="btn btn-sm btn-primary" onclick="app.downloadPdfReport()"><i class="fa-solid fa-file-pdf me-1"></i> Generate New PDF Report</button>
+            </div>
+            <div class="cv-card">
+                <div class="table-responsive">
+                    <table class="cv-timeline-table">
+                        <thead>
+                            <tr>
+                                <th>Report ID</th>
+                                <th>Filename</th>
+                                <th>SHA-256 Hash</th>
+                                <th>Created</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reports-table-tbody">
+                            <tr><td colspan="5" class="text-center text-muted py-4">No reports generated yet for this case.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- 8. SYSTEM DIAGNOSTICS & HARDWARE                                         -->
+        <!-- ========================================================================= -->
+        <div id="tab-view-settings" class="main-tab-content" style="display: none;">
+            <div class="mb-4">
+                <h2 class="h4 mb-1 text-white">System Diagnostics & Model Status</h2>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="cv-card">
+                        <div class="cv-section-title"><i class="fa-solid fa-microchip text-info me-2"></i> AI Model Configuration</div>
+                        <ul class="list-group list-group-flush" style="background: transparent;">
+                            <li class="list-group-item bg-transparent text-white border-secondary border-opacity-25 d-flex justify-content-between">
+                                <span>Object Detector (RT-DETR)</span>
+                                <span class="badge bg-success">rtdetr-l.pt (ACTIVE)</span>
+                            </li>
+                            <li class="list-group-item bg-transparent text-white border-secondary border-opacity-25 d-flex justify-content-between">
+                                <span>Scene Understanding (CLIP)</span>
+                                <span class="badge bg-success">openai/clip-vit-base-patch32 (READY)</span>
+                            </li>
+                            <li class="list-group-item bg-transparent text-white border-secondary border-opacity-25 d-flex justify-content-between">
+                                <span>Scene Description (BLIP)</span>
+                                <span class="badge bg-success">Salesforce/blip-image-captioning-base (READY)</span>
+                            </li>
+                            <li class="list-group-item bg-transparent text-white border-secondary border-opacity-25 d-flex justify-content-between">
+                                <span>Multilingual Speech (Whisper)</span>
+                                <span class="badge bg-success">OpenAI Whisper base (READY)</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="cv-card">
+                        <div class="cv-section-title"><i class="fa-solid fa-shield-halved text-warning me-2"></i> Decision-Support Boundaries</div>
+                        <div class="small text-secondary mb-3">
+                            CrimeVision AI assists investigators in multimodal evidence aggregation. It does not determine guilt or replace human judgment.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal: Create New Case -->
+    <div class="modal fade" id="modal-new-case" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background-color: #10192b; border: 1px solid #1b2944; color: #fff;">
+                <div class="modal-header border-secondary border-opacity-25">
+                    <h5 class="modal-title"><i class="fa-solid fa-folder-plus text-info me-2"></i> Register New Case</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="form-create-case" onsubmit="app.handleCreateCase(event)">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label small text-secondary">Case Title *</label>
+                            <input type="text" id="new-case-title" class="form-control bg-dark border-secondary text-white" required minlength="3" placeholder="e.g. Loading Dock Security Incident">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-secondary">Lead Investigator *</label>
+                            <input type="text" id="new-case-investigator" class="form-control bg-dark border-secondary text-white" required minlength="2" placeholder="e.g. Det. Alex Cross">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-secondary">Incident Description</label>
+                            <textarea id="new-case-desc" class="form-control bg-dark border-secondary text-white" rows="3" placeholder="Context & background..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary border-opacity-25">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Case</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- 3D Scene Viewport Engine -->
+    <script src="/static/js/scene3d.js"></script>
+    <!-- Main Frontend Application Logic -->
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

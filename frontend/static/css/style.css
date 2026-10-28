@@ -1,0 +1,472 @@
+/* CrimeVision AI - Exact Reference Forensic UI Styling */
+:root {
+    --bg-dark: #080d19;
+    --panel-bg: #10192b;
+    --panel-border: #1b2944;
+    --panel-hover: #15223a;
+    --active-mode-bg: #193155;
+    --active-mode-text: #4ea1ff;
+    --btn-blue: #1d62ec;
+    --btn-blue-hover: #1551c6;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --badge-pink: #e11d48;
+    --badge-green: #059669;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+/* Header */
+.cv-header {
+    background-color: #060a14;
+    border-bottom: 1px solid var(--panel-border);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cv-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: #38bdf8;
+    margin: 0;
+}
+
+.cv-title span {
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.cv-mode-indicator {
+    font-size: 0.82rem;
+    color: #38bdf8;
+    font-weight: 600;
+}
+
+/* Sub-Nav Bar (Feature Switcher) */
+.cv-subnav {
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.btn-nav-tab {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.15s ease;
+}
+
+.btn-nav-tab:hover {
+    color: #fff;
+    background-color: #0f192b;
+}
+
+.btn-nav-tab.active {
+    color: #38bdf8;
+    background-color: #16243b;
+    border-color: #20365a;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+}
+
+.main-tab-content {
+    display: none;
+}
+
+.main-tab-content.active {
+    display: block;
+}
+
+/* Cards */
+.cv-card {
+    background-color: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.cv-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+/* Mode Navigation */
+.cv-mode-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cv-mode-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background-color: #0b1220;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+}
+
+.cv-mode-btn:hover {
+    background-color: var(--panel-hover);
+    color: #fff;
+}
+
+.cv-mode-btn.active {
+    background-color: var(--active-mode-bg);
+    border-color: #2563eb;
+    color: var(--active-mode-text);
+    font-weight: 600;
+    box-shadow: 0 0 14px rgba(37, 99, 235, 0.25);
+}
+
+/* Upload Area */
+.cv-upload-box {
+    background-color: #0b1220;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 24px 16px;
+    text-align: center;
+    margin-bottom: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.cv-upload-box:hover {
+    border-color: #38bdf8;
+}
+
+.cv-file-pill {
+    background-color: #080d19;
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    color: #94a3b8;
+}
+
+.cv-btn-process {
+    background-color: var(--btn-blue);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.92rem;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cv-btn-process:hover {
+    background-color: var(--btn-blue-hover);
+    box-shadow: 0 0 16px rgba(29, 98, 236, 0.4);
+    color: #fff;
+}
+
+/* PDF Download Button */
+.cv-btn-download-pdf {
+    background-color: var(--btn-blue);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    width: 100%;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.15s ease;
+}
+
+.cv-btn-download-pdf:hover {
+    background-color: var(--btn-blue-hover);
+    color: #fff;
+}
+
+/* Center Image / 3D Display */
+.cv-image-canvas {
+    background-color: #050811;
+    border-radius: 8px;
+    min-height: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.cv-image-canvas img {
+    max-width: 100%;
+    max-height: 520px;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+/* 4 Metric Tiles Grid */
+.cv-metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.cv-metric-tile {
+    background-color: #0b1220;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+}
+
+.cv-metric-icon {
+    font-size: 1.25rem;
+    margin-bottom: 4px;
+}
+
+.cv-metric-title {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: capitalize;
+}
+
+.cv-metric-val {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+    margin-top: 2px;
+}
+
+/* Section Headings */
+.cv-section-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #cbd5e1;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* AI Scenarios Cards */
+.cv-scenario-card {
+    background-color: #16243b;
+    border: 1px solid #20365a;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: #cbd5e1;
+}
+
+.cv-scenario-title {
+    font-weight: 700;
+    color: #60a5fa;
+    margin-bottom: 4px;
+}
+
+/* Translation Tabs */
+.cv-tabs-bar {
+    display: flex;
+    border-bottom: 1px solid var(--panel-border);
+    margin-bottom: 14px;
+    gap: 4px;
+}
+
+.cv-tab-item {
+    padding: 8px 16px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s ease;
+}
+
+.cv-tab-item:hover {
+    color: #fff;
+}
+
+.cv-tab-item.active {
+    color: #38bdf8;
+    border-bottom-color: #38bdf8;
+    background: rgba(56, 189, 248, 0.05);
+}
+
+.cv-translation-box {
+    background-color: #0b1220;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: #e2e8f0;
+    min-height: 120px;
+}
+
+/* Badges */
+.cv-badge-pink {
+    background-color: rgba(225, 29, 72, 0.2);
+    color: #fb7185;
+    border: 1px solid rgba(225, 29, 72, 0.5);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.cv-badge-green {
+    background-color: rgba(5, 150, 105, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(5, 150, 105, 0.5);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+/* Chat Component */
+.cv-chat-box {
+    background-color: #0b1220;
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    height: 340px;
+    overflow: hidden;
+}
+
+.cv-chat-stream {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cv-chat-msg {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    line-height: 1.4;
+}
+
+.cv-chat-msg.assistant {
+    align-self: flex-start;
+    background-color: #1a273e;
+    color: #e2e8f0;
+    border-bottom-left-radius: 2px;
+}
+
+.cv-chat-msg.user {
+    align-self: flex-end;
+    background-color: #1d62ec;
+    color: #fff;
+    border-bottom-right-radius: 2px;
+}
+
+.cv-chat-input-bar {
+    display: flex;
+    padding: 8px;
+    background-color: #070c17;
+    border-top: 1px solid var(--panel-border);
+    gap: 8px;
+}
+
+.cv-chat-input {
+    flex: 1;
+    background-color: #0f192c;
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    color: #fff;
+    font-size: 0.82rem;
+    outline: none;
+}
+
+.cv-chat-btn-send {
+    background-color: #1d62ec;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0 14px;
+    cursor: pointer;
+}
+
+/* Timeline & Generic Tables */
+.cv-timeline-table {
+    width: 100%;
+    color: #e2e8f0;
+    border-collapse: collapse;
+}
+
+.cv-timeline-table th {
+    font-size: 0.72rem;
+    color: #38bdf8;
+    text-transform: uppercase;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--panel-border);
+    background-color: #0b1220;
+}
+
+.cv-timeline-table td {
+    font-size: 0.82rem;
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.cv-timeline-table tr:hover td {
+    background-color: #132038;
+}
+
+.cv-time-col {
+    color: #38bdf8;
+    font-family: monospace;
+    font-weight: 700;
+}
